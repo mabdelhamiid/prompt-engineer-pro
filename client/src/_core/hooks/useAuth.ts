@@ -8,6 +8,14 @@ type UseAuthOptions = {
   redirectPath?: string;
 };
 
+const DEMO_MODE = !import.meta.env.VITE_OAUTH_PORTAL_URL;
+
+const DEMO_USER = {
+  id: "demo",
+  name: "Demo User",
+  email: "demo@example.com",
+};
+
 export function useAuth(options?: UseAuthOptions) {
   const { redirectOnUnauthenticated = false, redirectPath = getLoginUrl() } =
     options ?? {};
@@ -16,6 +24,8 @@ export function useAuth(options?: UseAuthOptions) {
   const meQuery = trpc.auth.me.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: false,
+    // Skip the network call entirely in demo mode
+    enabled: !DEMO_MODE,
   });
 
   const logoutMutation = trpc.auth.logout.useMutation({
@@ -25,6 +35,7 @@ export function useAuth(options?: UseAuthOptions) {
   });
 
   const logout = useCallback(async () => {
+    if (DEMO_MODE) return;
     try {
       await logoutMutation.mutateAsync();
     } catch (error: unknown) {
@@ -42,6 +53,15 @@ export function useAuth(options?: UseAuthOptions) {
   }, [logoutMutation, utils]);
 
   const state = useMemo(() => {
+    if (DEMO_MODE) {
+      return {
+        user: DEMO_USER,
+        loading: false,
+        error: null,
+        isAuthenticated: true,
+      };
+    }
+
     localStorage.setItem(
       "manus-runtime-user-info",
       JSON.stringify(meQuery.data)
@@ -61,13 +81,14 @@ export function useAuth(options?: UseAuthOptions) {
   ]);
 
   useEffect(() => {
+    if (DEMO_MODE) return;
     if (!redirectOnUnauthenticated) return;
     if (meQuery.isLoading || logoutMutation.isPending) return;
     if (state.user) return;
     if (typeof window === "undefined") return;
     if (window.location.pathname === redirectPath) return;
 
-    window.location.href = redirectPath
+    window.location.href = redirectPath;
   }, [
     redirectOnUnauthenticated,
     redirectPath,

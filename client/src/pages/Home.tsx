@@ -83,6 +83,13 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Demo Mode Banner */}
+        {!import.meta.env.VITE_OAUTH_PORTAL_URL && (
+          <div className="mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+            <strong>Demo Mode</strong> — running without a backend. Generate/Improve features require a configured database and API keys.
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8 space-y-2">
           <div className="flex items-center justify-between">
