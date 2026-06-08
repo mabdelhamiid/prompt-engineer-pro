@@ -2,6 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Loader2, Sparkles, BookOpen, ArrowRight } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { useState } from "react";
@@ -13,6 +14,103 @@ import HistoryTab from "@/pages/HistoryTab";
 import CustomTabsTab from "@/pages/CustomTabsTab";
 import { useCustomTabs } from "@/hooks/useCustomTabs";
 import { SessionManager } from "@/components/SessionManager";
+
+const useOAuth = !!import.meta.env.VITE_OAUTH_PORTAL_URL;
+
+function LandingPage() {
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        const data = await res.json();
+        setError(data.error || "Invalid password");
+      }
+    } catch {
+      setError("Could not reach server. Check your deployment configuration.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
+      <div className="max-w-2xl w-full text-center space-y-8">
+        <div className="space-y-4">
+          <div className="flex justify-center">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-2xl">
+              <Sparkles className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <h1 className="text-5xl font-bold text-slate-900">Prompt Engineer Pro</h1>
+          <p className="text-xl text-slate-600">
+            Craft, analyze, and perfect your AI prompts with elegant precision
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
+          <Card className="p-6 border border-slate-200 bg-white hover:shadow-lg transition-shadow">
+            <Sparkles className="w-6 h-6 text-blue-500 mb-3" />
+            <h3 className="font-semibold text-slate-900 mb-2">Generate</h3>
+            <p className="text-sm text-slate-600">Convert ideas into optimized prompts</p>
+          </Card>
+          <Card className="p-6 border border-slate-200 bg-white hover:shadow-lg transition-shadow">
+            <BookOpen className="w-6 h-6 text-blue-500 mb-3" />
+            <h3 className="font-semibold text-slate-900 mb-2">Improve</h3>
+            <p className="text-sm text-slate-600">Enhance existing prompts with insights</p>
+          </Card>
+          <Card className="p-6 border border-slate-200 bg-white hover:shadow-lg transition-shadow">
+            <ArrowRight className="w-6 h-6 text-blue-500 mb-3" />
+            <h3 className="font-semibold text-slate-900 mb-2">Organize</h3>
+            <p className="text-sm text-slate-600">Build your personal prompt library</p>
+          </Card>
+        </div>
+
+        {useOAuth ? (
+          <Button
+            onClick={() => (window.location.href = getLoginUrl())}
+            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-6 text-lg rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+          >
+            Get Started
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </Button>
+        ) : (
+          <form onSubmit={handlePasswordLogin} className="max-w-sm mx-auto space-y-3">
+            <Input
+              type="password"
+              placeholder="Enter access password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="text-center border-slate-300"
+              autoFocus
+            />
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <Button
+              type="submit"
+              disabled={loading || !password}
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all"
+            >
+              {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Signing in...</> : <>Get Started <ArrowRight className="w-4 h-4 ml-2" /></>}
+            </Button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const { user, loading, isAuthenticated } = useAuth();
@@ -35,61 +133,12 @@ export default function Home() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
-        <div className="max-w-2xl text-center space-y-8">
-          <div className="space-y-4">
-            <div className="flex justify-center">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-2xl">
-                <Sparkles className="w-8 h-8 text-white" />
-              </div>
-            </div>
-            <h1 className="text-5xl font-bold text-slate-900">Prompt Engineer Pro</h1>
-            <p className="text-xl text-slate-600">
-              Craft, analyze, and perfect your AI prompts with elegant precision
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-8">
-            <Card className="p-6 border border-slate-200 bg-white hover:shadow-lg transition-shadow">
-              <Sparkles className="w-6 h-6 text-blue-500 mb-3" />
-              <h3 className="font-semibold text-slate-900 mb-2">Generate</h3>
-              <p className="text-sm text-slate-600">Convert ideas into optimized prompts</p>
-            </Card>
-            <Card className="p-6 border border-slate-200 bg-white hover:shadow-lg transition-shadow">
-              <BookOpen className="w-6 h-6 text-blue-500 mb-3" />
-              <h3 className="font-semibold text-slate-900 mb-2">Improve</h3>
-              <p className="text-sm text-slate-600">Enhance existing prompts with insights</p>
-            </Card>
-            <Card className="p-6 border border-slate-200 bg-white hover:shadow-lg transition-shadow">
-              <ArrowRight className="w-6 h-6 text-blue-500 mb-3" />
-              <h3 className="font-semibold text-slate-900 mb-2">Organize</h3>
-              <p className="text-sm text-slate-600">Build your personal prompt library</p>
-            </Card>
-          </div>
-
-          <Button
-            onClick={() => (window.location.href = getLoginUrl())}
-            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-6 text-lg rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-          >
-            Get Started
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
-        </div>
-      </div>
-    );
+    return <LandingPage />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Demo Mode Banner */}
-        {!import.meta.env.VITE_OAUTH_PORTAL_URL && (
-          <div className="mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-            <strong>Demo Mode</strong> — running without a backend. Generate/Improve features require a configured database and API keys.
-          </div>
-        )}
-
         {/* Header */}
         <div className="mb-8 space-y-2">
           <div className="flex items-center justify-between">
