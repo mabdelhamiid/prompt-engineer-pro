@@ -1,0 +1,11 @@
+{
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install --no-frozen-lockfile",
+  "outputDirectory": "dist/public",
+  "rewrites": [
+    { "source": "/api/trpc/:path*", "destination": "/api/server" },
+    { "source": "/auth/:path*", "destination": "/api/server" },
+    { "source": "/storage/:path*", "destination": "/api/server" },
+    { "source": "/:path*", "destination": "/index.html" }
+  ]
+}
