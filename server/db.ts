@@ -117,7 +117,7 @@ export async function savePromptHistory(
 
 export async function getPromptHistory(userId: number, limit = 50) {
   const db = await getDb();
-  if (!db) throw new Error("Database not available");
+  if (!db) return [];
 
   const results = await db
     .select()
@@ -168,7 +168,7 @@ export async function savePromptToLibrary(
 
 export async function getSavedPrompts(userId: number) {
   const db = await getDb();
-  if (!db) throw new Error("Database not available");
+  if (!db) return [];
 
   const results = await db
     .select()
@@ -181,7 +181,7 @@ export async function getSavedPrompts(userId: number) {
 
 export async function searchSavedPrompts(userId: number, searchQuery: string) {
   const db = await getDb();
-  if (!db) throw new Error("Database not available");
+  if (!db) return [];
 
   const results = await db
     .select()

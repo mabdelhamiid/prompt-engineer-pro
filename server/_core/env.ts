@@ -1,6 +1,8 @@
 export const ENV = {
-  appId: process.env.VITE_APP_ID ?? "",
-  cookieSecret: process.env.JWT_SECRET ?? "",
+  appId: process.env.VITE_APP_ID ?? "self-hosted",
+  // Fall back to a default secret so the app doesn't crash on first deploy.
+  // IMPORTANT: set JWT_SECRET to a strong random string in production.
+  cookieSecret: process.env.JWT_SECRET ?? "change-me-set-JWT_SECRET-env-var",
   databaseUrl: process.env.DATABASE_URL ?? "",
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",

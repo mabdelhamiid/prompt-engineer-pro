@@ -115,13 +115,9 @@ export const appRouter = router({
         const generatedPrompt =
           typeof content === "string" ? content : "Failed to generate prompt";
 
-        await savePromptHistory(
-          ctx.user.id,
-          "generation",
-          input.idea,
-          generatedPrompt,
-          input.framework
-        );
+        try {
+          await savePromptHistory(ctx.user.id, "generation", input.idea, generatedPrompt, input.framework);
+        } catch { /* DB unavailable — history not saved */ }
 
         return { prompt: generatedPrompt, framework: input.framework };
       }),
@@ -201,14 +197,9 @@ export const appRouter = router({
           console.error("Failed to parse improve response:", error);
         }
 
-        await savePromptHistory(
-          ctx.user.id,
-          "improvement",
-          input.prompt,
-          improvedPrompt,
-          input.framework,
-          JSON.stringify(breakdown)
-        );
+        try {
+          await savePromptHistory(ctx.user.id, "improvement", input.prompt, improvedPrompt, input.framework, JSON.stringify(breakdown));
+        } catch { /* DB unavailable — history not saved */ }
 
         return {
           originalPrompt: input.prompt,
